@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS 3D | Premium Web Experience</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.net.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #8a2be2;
+            --secondary: #00d9ff;
+            --accent: #ff00c8;
+            --dark: #0a0a1a;
+            --darker: #050510;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            overflow-x: hidden;
+            background: var(--darker);
+            color: white;
+            min-height: 100vh;
+            perspective: 1000px;
+            will-change: transform, opacity;
+        }
+        
+        #vanta-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Navigation */
+        header {
+            padding: 30px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeInDown 1s ease-out;
+            position: relative;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+            letter-spacing: 1px;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+        
+        nav a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+            padding: 8px 0;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+        }
+        
+        nav a:hover {
+            color: white;
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.3s ease;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 120px 0 100px;
+            text-align: center;
+            position: relative;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 6rem;
+            font-weight: 900;
+            margin-bottom: 25px;
+            background: linear-gradient(45deg, var(--primary), var(--accent), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(0, 217, 255, 0.3);
+            letter-spacing: -2px;
+            line-height: 1.1;
+        }
+        
+        .subtitle {
+            font-size: 1.8rem;
+            margin-bottom: 50px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            color: rgba(255, 255, 255, 0.9);
+            animation: fadeInUp 1s ease-out 0.3s both;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 20px 60px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            box-shadow: 0 10px 40px rgba(138, 43, 226, 0.6);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            border: none;
+            cursor: pointer;
+            transform: translateZ(0);
+            will-change: transform, box-shadow;
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.6s;
+            z-index: -1;
+        }
+        
+        .cta-button:hover::before {
+            left: 100%;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(138, 43, 226, 0.8);
+        }
+        
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            margin: 120px 0;
+        }
+        
+        .feature-card {
+            background: rgba(20, 15, 35, 0.5);
+            backdrop-filter: blur(12px);
+            border-radius: 25px;
+            padding: 50px 35px;
+            text-align: center;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            transform-style: preserve-3d;
+            transform: translateZ(0);
+            will-change: transform, box-shadow, background;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-15px) translateZ(20px) rotateY(5deg);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            background: rgba(30, 25, 50, 0.7);
+            border: 1px solid rgba(138, 43, 226, 0.6);
+        }
+        
+        .feature-icon {
+            font-size: 60px;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(138, 43, 226, 0.5));
+        }
+        
+        .feature-card h3 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+        
+        .feature-card p {
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+        
+        /* 3D Showcase */
+        .showcase {
+            position: relative;
+            height: 700px;
+            margin: 150px 0;
+            border-radius: 40px;
+            overflow: hidden;
+            border: 2px solid rgba(138, 43, 226, 0.4);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            transform-style: preserve-3d;
+            transform: perspective(1000px) rotateX(5deg);
+            will-change: transform;
+        }
+        
+        #three-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        /* Floating Animation */
+        .floating {
+            animation: floating 8s ease-in-out infinite;
+            will-change: transform;
+        }
+        
+        /* Gallery Section */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 120px 0;
+        }
+        
+        .gallery-item {
+            height: 400px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            transform: translateZ(0);
+            will-change: transform;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 30px 60px rgba(138, 43, 226, 0.5);
+            z-index: 2;
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+        
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+        
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 25px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+        }
+        
+        .gallery-item:hover .gallery-caption {
+            transform: translateY(0);
+        }
+        
+        /* Stats Section */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 120px 0;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            min-width: 200px;
+        }
+        
+        .stat-value {
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 80px 0 50px;
+            margin-top: 150px;
+            border-top: 1px solid rgba(138, 43, 226, 0.2);
+            position: relative;
+        }
+        
+        .footer-content {
+            max-width: 700px;
+            margin: 0 auto 50px;
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 40px 0;
+        }
+        
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(138, 43, 226, 0.15);
+            color: white;
+            font-size: 28px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateZ(0);
+            will-change: transform, background;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+        
+        .social-icons a:hover {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.6);
+        }
+        
+        .copyright {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+            margin-top: 40px;
+        }
+        
+        /* Animations */
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-25px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes glow {
+            0% { text-shadow: 0 0 10px rgba(138, 43, 226, 0.3); }
+            100% { text-shadow: 0 0 50px rgba(138, 43, 226, 0.7), 0 0 80px rgba(138, 43, 226, 0.5); }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(138, 43, 226, 0.7); }
+            70% { box-shadow: 0 0 0 25px rgba(138, 43, 226, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(138, 43, 226, 0); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            h1 {
+                font-size: 4.5rem;
+            }
+            
+            .showcase {
+                height: 500px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 3.5rem;
+            }
+            .subtitle {
+                font-size: 1.4rem;
+            }
+            nav ul {
+                gap: 15px;
+            }
+            .feature-card {
+                padding: 35px 25px;
+            }
+            .stat-value {
+                font-size: 4rem;
+            }
+        }
+        
+        /* Performance Optimizations */
+        *, *::before, *::after {
+            backface-visibility: hidden;
+        }
+        
+        .performance-optimized {
+            transform: translateZ(0);
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="vanta-bg"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">NEXUS3D</div>
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Experiences</a></li>
+                    <li><a href="#">Technology</a></li>
+                    <li><a href="#">Gallery</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <section class="hero">
+            <h1>THE FUTURE OF IMMERSIVE WEB</h1>
+            <p class="subtitle">Experience next-generation 3D web technology with buttery-smooth 90fps rendering and unparalleled visual fidelity</p>
+            <a href="#" class="cta-button">ENTER THE NEXUS</a>
+        </section>
+        
+        <section class="features">
+            <div class="feature-card floating">
+                <div class="feature-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h3>90FPS Performance</h3>
+                <p>Optimized rendering pipeline delivers ultra-smooth 90fps experience on all modern devices.</p>
+            </div>
+            
+            <div class="feature-card floating" style="animation-delay: 0.5s;">
+                <div class="feature-icon">
+                    <i class="fas fa-vr-cardboard"></i>
+                </div>
+                <h3>VR Integration</h3>
+                <p>Full VR compatibility for the ultimate immersive experience with WebXR technology.</p>
+            </div>
+            
+            <div class="feature-card floating" style="animation-delay: 1s;">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>AI Enhanced</h3>
+                <p>Smart rendering and adaptive quality powered by machine learning algorithms.</p>
+            </div>
+        </section>
+        
+        <section class="showcase">
+            <div id="three-container"></div>
+        </section>
+        
+        <section class="gallery">
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1639762681057-408e52192e55?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="3D City">
+                <div class="gallery-caption">
+                    <h3>Urban Metaverse</h3>
+                    <p>Explore futuristic cityscapes</p>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1633269540827-728aabbb7646?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="3D Abstract">
+                <div class="gallery-caption">
+                    <h3>Abstract Dimensions</h3>
+                    <p>Surreal 3D environments</p>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <img src="https://images.unsplash.com/photo-1639762681485-0744b080e4c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="3D Nature">
+                <div class="gallery-caption">
+                    <h3>Digital Nature</h3>
+                    <p>Procedurally generated ecosystems</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="stats">
+            <div class="stat-item">
+                <div class="stat-value">90</div>
+                <div class="stat-label">Frames Per Second</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">4K</div>
+                <div class="stat-label">Resolution Support</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">0.1ms</div>
+                <div class="stat-label">Render Time</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">1M+</div>
+                <div class="stat-label">Polygons</div>
+            </div>
+        </section>
+        
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3>Real-time Ray Tracing</h3>
+                <p>Advanced lighting with real-time ray tracing for photorealistic scenes and reflections.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-cloud"></i>
+                </div>
+                <h3>Cloud Rendering</h3>
+                <p>Offload heavy computations to our cloud rendering cluster for maximum performance.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-sync"></i>
+                </div>
+                <h3>Adaptive Scaling</h3>
+                <p>Intelligent quality adjustment based on device capabilities and network conditions.</p>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <h2 style="font-size: 2.5rem; margin-bottom: 20px;">Ready for the Next Dimension?</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9;">Join our community of creators and explore the future of the web</p>
+            <a href="#" class="cta-button">GET STARTED</a>
+        </div>
+        
+        <div class="social-icons">
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-discord"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-github"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+        
+        <p class="copyright">© 2023 NEXUS3D. ALL RIGHTS RESERVED. | 90FPS EXPERIENCE OPTIMIZED</p>
+    </footer>
+
+    <script>
+        // Performance optimization flags
+        const HIGH_PERFORMANCE_MODE = true;
+        const MAX_FPS = 90;
+        const FRAME_TIME = 1000 / MAX_FPS;
+        
+        // Initialize Vanta.js background with performance settings
+        const vantaEffect = VANTA.NET({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x8a2be2,
+            backgroundColor: 0x050510,
+            points: 10.00,
+            maxDistance: 22.00,
+            spacing: 16.00
+        });
+        
+        // Initialize Three.js scene with performance optimizations
+        function initThreeScene() {
+            const container = document.getElementById('three-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                alpha: true, 
+                antialias: true,
+                powerPreference: HIGH_PERFORMANCE_MODE ? "high-performance" : "default"
+            });
+            
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setAnimationLoop(null); // We'll control the loop manually
+            container.appendChild(renderer.domElement);
+            
+            // Use instanced mesh for better performance
+            const geometry = new THREE.IcosahedronGeometry(1, 2);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0x8a2be2,
+                emissive: 0x4a1b8a,
+                metalness: 0.8,
+                roughness: 0.15,
+                flatShading: false
+            });
+            
+            const objects = [];
+            const count = 40;
+            
+            for (let i = 0; i < count; i++) {
+                const mesh = new THREE.Mesh(geometry, material.clone());
+                mesh.position.x = Math.random() * 50 - 25;
+                mesh.position.y = Math.random() * 30 - 15;
+                mesh.position.z = Math.random() * -50;
+                mesh.scale.setScalar(Math.random() * 2 + 0.5);
+                mesh.userData.originalScale = mesh.scale.clone();
+                mesh.userData.speed = Math.random() * 0.02 + 0.005;
+                mesh.userData.offset = Math.random() * Math.PI * 2;
+                scene.add(mesh);
+                objects.push(mesh);
+            }
+            
+            // Optimized lighting
+            const ambientLight = new THREE.AmbientLight(0x3333ff, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+            
+            const pointLight = new THREE.PointLight(0xff00cc, 2, 100);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+            
+            // Particle system with buffer geometry
+            const particleCount = 3000;
+            const particles = new THREE.BufferGeometry();
+            const posArray = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                posArray[i] = (Math.random() - 0.5) * 100;
+                posArray[i+1] = (Math.random() - 0.5) * 100;
+                posArray[i+2] = (Math.random() - 0.5) * 100;
+            }
+            
+            particles.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 0.1,
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.7,
+                sizeAttenuation: true
+            });
+            
+            const particleSystem = new THREE.Points(particles, particleMaterial);
+            scene.add(particleSystem);
+            
+            camera.position.z = 25;
+            
+            // Handle window resize efficiently
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    camera.aspect = container.clientWidth / container.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                }, 200);
+            });
+            
+            // High-performance animation loop
+            let lastFrameTime = performance.now();
+            
+            function animate(currentTime) {
+                requestAnimationFrame(animate);
+                
+                // Control FPS
+                const delta = currentTime - lastFrameTime;
+                if (delta < FRAME_TIME) return;
+                
+                lastFrameTime = currentTime - (delta % FRAME_TIME);
+                
+                // Animate objects
+                const time = currentTime * 0.001;
+                
+                objects.forEach(obj => {
+                    obj.rotation.x += obj.userData.speed * 0.5;
+                    obj.rotation.y += obj.userData.speed;
+                    
+                    // Floating animation
+                    obj.position.y = Math.sin(time + obj.userData.offset) * 3;
+                    
+                    // Pulsing scale
+                    const scaleFactor = Math.sin(time * 2 + obj.userData.offset) * 0.1 + 1;
+                    obj.scale.copy(obj.userData.originalScale).multiplyScalar(scaleFactor);
+                });
+                
+                // Animate particles
+                particleSystem.rotation.x += 0.0005;
+                particleSystem.rotation.y += 0.0003;
+                
+                // Move camera
+                camera.position.x = Math.sin(time * 0.3) * 8;
+                camera.position.y = Math.cos(time * 0.2) * 5;
+                camera.lookAt(scene.position);
+                
+                renderer.render(scene, camera);
+            }
+            
+            // Start the optimized animation loop
+            requestAnimationFrame(animate);
+        }
+        
+        // Initialize when page is loaded
+        window.addEventListener('load', () => {
+            initThreeScene();
+            
+            // Add scroll animations with throttling
+            let lastScrollTime = 0;
+            window.addEventListener('scroll', () => {
+                const now = Date.now();
+                if (now - lastScrollTime < 50) return; // Throttle to 20fps
+                lastScrollTime = now;
+                
+                const showcase = document.querySelector('.showcase');
+                const scrollY = window.scrollY;
+                const rotation = scrollY * 0.03;
+                const translateZ = scrollY * 0.1;
+                
+                showcase.style.transform = `perspective(1000px) rotateX(${5 - rotation}deg) translateZ(${translateZ}px)`;
+            });
+        });
+        
+        // Performance monitoring
+        if (HIGH_PERFORMANCE_MODE) {
+            const stats = new Stats();
+            stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+            document.body.appendChild(stats.dom);
+            
+            const animateStats = () => {
+                stats.begin();
+                stats.end();
+                requestAnimationFrame(animateStats);
+            };
+            requestAnimationFrame(animateStats);
+        }
+    </script>
+</body>
+</html>
